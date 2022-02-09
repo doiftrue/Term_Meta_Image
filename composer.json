@@ -1,6 +1,6 @@
 {
     "name": "doiftrue/wp_term_image",
-    "description": "Wordpress Term Image.",
+    "description": "Upload images functianality for Wordpress taxonomy terms. In admin panel.",
     "keywords": [ "wordpress" ],
     "homepage": "https://wp-kama.ru/7686",
     "type": "library",
@@ -8,7 +8,6 @@
     "authors": [
         {
             "name": "Timur Kamaev",
-            "email": "info@wp-kama.ru",
             "homepage": "https://wp-kama.ru"
         }
     ],

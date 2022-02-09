@@ -14,10 +14,10 @@
 
 ### Подключение
 
-Подключите php файл ``Term_Image.php``:
+Подключите php файл ``WP_Term_Image.php``:
 
 ```php
-require_once __DIR__ . '/Term_Image.php';
+require_once __DIR__ . '/WP_Term_Image.php';
 ```
 
 Или используйте Composer:
@@ -29,18 +29,15 @@ composer require doiftrue/wp_term_image
 ### Инициализация
 
 ```php
-add_action( 'admin_init', 'kama_wp_term_image_init' );
+add_action( 'admin_init', 'kama_wp_term_image' );
 
-function kama_wp_term_image_init(){
-
-	if( is_admin() ){
+function kama_wp_term_image(){
 	
-		// Укажем для какой таксономии нужна возможность устанавливать картинки.
-		// Можно не указывать, тогда картинки возможность будет автоматом добавлена для всех публичных таксономий
-		\wp_term_image\Term_Image::$taxes = [ 'post_tag' ];
+	// Укажем для какой таксономии нужна возможность устанавливать картинки.
+	// Можно не указывать, тогда возможность будет автоматом добавлена для всех публичных таксономий.
+	\Kama\WP_Term_Image::$taxes = [ 'post_tag' ];
 
-		\wp_term_image\Term_Image::instance();
-	}
+	\Kama\WP_Term_Image::instance();
 }
 ```
 
@@ -48,5 +45,6 @@ function kama_wp_term_image_init(){
 
 ```php
 $image_id = get_term_meta( $term_id, '_thumbnail_id', 1 );
+
 $image_url = wp_get_attachment_image_url( $image_id, 'thumbnail' );
 ```

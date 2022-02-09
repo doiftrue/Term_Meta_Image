@@ -1,35 +1,37 @@
 <?php
 
-namespace wp_term_image;
+namespace Kama;
 
 /**
  * Возможность загружать изображения для терминов (элементов таксономий: категории, метки).
  *
  * Пример инициализации всего функционала:
- *     \wp_term_image\Term_Image::instance();
+ *
+ *     \Kama\WP_Term_Image::instance();
  *
  * Пример получения ID и URL картинки термина:
+ *
  *     $image_id = get_term_meta( $term_id, '_thumbnail_id', 1 );
  *     $image_url = wp_get_attachment_image_url( $image_id, 'thumbnail' );
  *
  * @author Kama (wp-kama.ru)
  *
- * @version 3.1
+ * @version 3.3
  */
 
-class Term_Image {
+class WP_Term_Image {
 
-	// для каких таксономий включить код. По умолчанию для всех публичных.
+	// Для каких таксономий включить код. По умолчанию для всех публичных.
 	public static $taxes = []; // [ 'category', 'post_tag' ];
-
-	// название мета ключа у термина
-	public static $meta_key = '_thumbnail_id';
-
-	// название мета ключа вложения (метка что это вложение относится к термину)
-	public static $attach_term_meta_key = 'image_of_term';
 
 	// URL пустой картинки
 	public static $add_img_url = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkAQMAAABKLAcXAAAABlBMVEUAAAC7u7s37rVJAAAAAXRSTlMAQObYZgAAACJJREFUOMtjGAV0BvL/G0YMr/4/CDwY0rzBFJ704o0CWgMAvyaRh+c6m54AAAAASUVORK5CYII=';
+
+	// название мета ключа у термина
+	private static $meta_key = '_thumbnail_id';
+
+	// название мета ключа вложения (метка что это вложение относится к термину)
+	private static $attach_term_meta_key = 'image_of_term';
 
 	public static function instance(){
 		static $inst;
@@ -53,6 +55,7 @@ class Term_Image {
 			add_filter( "manage_edit-{$taxname}_columns", [ $this, '_add_image_column' ] );
 			add_filter( "manage_{$taxname}_custom_column", [ $this, '_fill_image_column' ], 10, 3 );
 		}
+
 	}
 
 	## поля при создании термина
@@ -81,6 +84,7 @@ class Term_Image {
 
 	## поля при редактировании термина
 	public function _update_term_image( $term, $taxonomy ){
+
 		wp_enqueue_media(); // подключим стили медиа, если их нет
 
 		add_action( 'admin_print_footer_scripts', [ $this, '_add_script' ], 99 );

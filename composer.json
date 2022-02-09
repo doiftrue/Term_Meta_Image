@@ -1,0 +1,24 @@
+{
+    "name": "doiftrue/wp_term_image",
+    "description": "Wordpress Term Image.",
+    "keywords": [ "wordpress" ],
+    "homepage": "https://wp-kama.ru/7686",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Timur Kamaev",
+            "email": "info@wp-kama.ru",
+            "homepage": "https://wp-kama.ru"
+        }
+    ],
+    "require": {
+        "php": ">=5.6.0"
+    },
+    "require-dev": {},
+    "autoload": {
+        "psr-4": {
+            "wp_term_image\\": ""
+        }
+    }
+}

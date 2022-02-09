@@ -1,5 +1,7 @@
 <?php
 
+namespace wp_term_image;
+
 /**
  * Возможность загружать изображения для терминов (элементов таксономий: категории, метки).
  *
@@ -12,19 +14,7 @@
  * @version 3.1
  */
 
-
-// init
-add_action( 'admin_init', 'kama_term_meta_image_init' );
-
-function kama_term_meta_image_init(){
-
-	if( is_admin() ){
-		//Kama_Term_Meta_Image::$taxes = [ 'post_tag' ];
-		Kama_Term_Meta_Image::instance();
-	}
-}
-
-class Kama_Term_Meta_Image {
+class Term_Image {
 
 	// для каких таксономий включить код. По умолчанию для всех публичных.
 	public static $taxes = []; // [ 'category', 'post_tag' ];

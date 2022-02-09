@@ -35,6 +35,13 @@ function kama_wp_term_image_init(){
 }
 ```
 
+Пример получения ID и URL картинки термина:
+
+```php
+$image_id = get_term_meta( $term_id, '_thumbnail_id', 1 );
+$image_url = wp_get_attachment_image_url( $image_id, 'thumbnail' );
+```
+
 
 Подключение через Composer
 --------

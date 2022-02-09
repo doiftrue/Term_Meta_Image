@@ -5,11 +5,14 @@ namespace wp_term_image;
 /**
  * Возможность загружать изображения для терминов (элементов таксономий: категории, метки).
  *
+ * Пример инициализации всего функционала:
+ *     \wp_term_image\Term_Image::instance();
+ *
  * Пример получения ID и URL картинки термина:
  *     $image_id = get_term_meta( $term_id, '_thumbnail_id', 1 );
  *     $image_url = wp_get_attachment_image_url( $image_id, 'thumbnail' );
  *
- * @author  : Kama http://wp-kama.ru
+ * @author Kama (wp-kama.ru)
  *
  * @version 3.1
  */

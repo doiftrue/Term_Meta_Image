@@ -17,7 +17,7 @@
     "require-dev": {},
     "autoload": {
         "psr-4": {
-            "wp_term_image\\": ""
+            "Kama\\": ""
         }
     }
 }

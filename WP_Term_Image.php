@@ -16,7 +16,7 @@ namespace Kama;
  *
  * @author Kama (wp-kama.ru)
  *
- * @version 3.2
+ * @version 3.3
  */
 
 class WP_Term_Image {

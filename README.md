@@ -1,2 +1,9 @@
-# Term_Meta_Image
-Term_Meta_Image
+
+Миниатюры для элементов таксономий
+------------------
+
+Добавляет возможность задавать миниатюры для элементов таксономий WordPress, как встроенных (метки, рубрики), так и произвольных.
+
+![](https://wp-kama.ru/wp-content/uploads/2016/12/miniatyura-dlya-termina-sozdanie.png)
+
+Подробнее читайте по этой ссылке: https://wp-kama.ru/7686

@@ -8,10 +8,16 @@
 
 Подробнее читайте по этой ссылке: https://wp-kama.ru/7686
 
-Пример использования
+Пример использования 
 --------------------
 
-Подключите файл 
+Подключите php файл ``Term_Image.php``:
+
+```php
+require_once __DIR__ . '/Term_Image.php';
+```
+
+Инициализация:
 
 ```php
 add_action( 'admin_init', 'kama_wp_term_image_init' );
@@ -30,7 +36,7 @@ function kama_wp_term_image_init(){
 ```
 
 
-Composer
+Подключение через Composer
 --------
 
 ```bash

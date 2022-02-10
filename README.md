@@ -29,6 +29,14 @@ composer require doiftrue/wp_term_image
 
 ### Инициализация
 
+Базовая без передачи параметров:
+
+```php
+add_action( 'admin_init', '\\Kama\\WP_Term_Image::init' );
+```
+
+С передачей параметров:
+
 ```php
 add_action( 'admin_init', 'kama_wp_term_image' );
 
@@ -36,16 +44,24 @@ function kama_wp_term_image(){
 	
 	// Укажем для какой таксономии нужна возможность устанавливать картинки.
 	// Можно не указывать, тогда возможность будет автоматом добавлена для всех публичных таксономий.
-	\Kama\WP_Term_Image::$taxes = [ 'post_tag' ];
 
-	\Kama\WP_Term_Image::instance();
+	\Kama\WP_Term_Image::init( [
+		'taxonomies' => [ 'post_tag' ],
+	] );
 }
 ```
 
-Пример получения ID и URL картинки термина:
+### Получение данных в шаблоне темы
+
+Пример получения ID картинки-вложения термина:
 
 ```php
+$image_id = \Kama\WP_Term_Image::get_image_id( $term_id );
+// OR
 $image_id = get_term_meta( $term_id, '_thumbnail_id', 1 );
+```
 
+Теперь по ID мы пожем получить URL вложения:
+```php
 $image_url = wp_get_attachment_image_url( $image_id, 'thumbnail' );
 ```

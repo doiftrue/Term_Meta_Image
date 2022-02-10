@@ -7,7 +7,7 @@ namespace Kama;
  *
  * Пример инициализации всего функционала:
  *
- *     \Kama\WP_Term_Image::instance();
+ *     add_action( 'admin_init', [ '\\Kama\\WP_Term_Image', 'instance' ] );
  *
  * Пример получения ID и URL картинки термина:
  *

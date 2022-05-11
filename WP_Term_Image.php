@@ -9,7 +9,7 @@ namespace Kama;
  *
  * @author Kama (wp-kama.ru)
  *
- * @version 3.4
+ * @version 3.5
  */
 
 class WP_Term_Image {
@@ -208,7 +208,8 @@ class WP_Term_Image {
 						let selected = frame.state().get( 'selection' ).first().toJSON();
 						if( selected ){
 							$imgid.val( selected.id );
-							$imgwrap.find( 'img' ).attr( 'src', selected.sizes.thumbnail.url );
+							let src = selected.sizes.thumbnail ? selected.sizes.thumbnail.url : selected.url
+							$imgwrap.find( 'img' ).attr( 'src', src );
 						}
 					} );
 
@@ -334,5 +335,3 @@ class WP_Term_Image {
 	}
 
 }
-
-

@@ -1,42 +1,42 @@
 <?php
 
-namespace Kama;
-
 /**
- * Возможность загружать изображения для терминов (элементов таксономий: категории, метки).
+ * Ability to upload images for terms (elements of taxonomies: categories, labels).
  *
- * Пример использвоания смотрите здесь: https://github.com/doiftrue/Term_Meta_Image
+ * See here for an example of how to use it: https://github.com/doiftrue/Term_Meta_Image
  *
  * @author Kama (wp-kama.ru)
  *
  * @version 3.5
  */
 
+namespace Kama;
+
 class WP_Term_Image {
 
 	/**
-	 * Параметры по умолчанию, которые можно изменить при инициализации класса.
+	 * Default parameters that can be changed during class initialization.
 	 *
 	 * @var array
 	 */
 	private static $args = [
 
-		// Для каких таксономий включить код. По умолчанию для всех публичных.
+		// For which taxonomies to include code. The default is for all public ones.
 		'taxonomies' => [],
 
-		// URL пустой картинки
+		// URL of the empty image
 		'noimage_src' => "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 1000 1000'%3E%3Cpath fill='%23bbb' d='M430 660 l0 -90 -90 0 -90 0 0 -70 0 -70 90 0 90 0 0 -85 0 -85 70 0 70 0 0 85 0 85 90 0 90 0 0 70 0 70 -90 0 -90 0 0 90 0 90 -70 0 -70 0 0 -90z'%3E%3C/path%3E%3C/svg%3E",
 	];
 
 	/**
-	 * Название мета ключа у термина где храниться ID картинки-вложения.
+	 * The name of the meta key for the term where the ID of the attachment is stored.
 	 *
 	 * @var string
 	 */
 	private static $meta_key = '_thumbnail_id';
 
 	/**
-	 * Название мета ключа для поста-вложения (метка к какому термину относится картинка).
+	 * The name of the meta key for the attachment post (label which term the picture belongs to).
 	 *
 	 * @var string
 	 */
@@ -77,7 +77,7 @@ class WP_Term_Image {
 	}
 
 	/**
-	 * @param int|WP_Term $term Термин картинку которого нужно получить.
+	 * @param int|\WP_Term $term The term which image you want to get.
 	 *
 	 * @return int 0 if no image.
 	 */
@@ -87,15 +87,15 @@ class WP_Term_Image {
 	}
 
 	/**
-	 * Поля при создании термина.
+	 * Fields at term creation.
 	 *
-	 * @param $taxonomy
+	 * @param string $taxonomy
 	 *
 	 * @return void
 	 */
 	public function _add_term__image_fields( $taxonomy ){
 
-		// подключим стили медиа, если их нет
+		// add the media styles, if they are not present
 		wp_enqueue_media();
 
 		add_action( 'admin_print_footer_scripts', [ $this, '_add_script' ], 99 );
@@ -117,10 +117,17 @@ class WP_Term_Image {
 		<?php
 	}
 
-	## поля при редактировании термина
+	/**
+	 * Fields when editing a term.
+	 *
+	 * @param \WP_Term $term
+	 * @param string   $taxonomy
+	 *
+	 * @return void
+	 */
 	public function _update_term__image_fields( $term, $taxonomy ){
 
-		wp_enqueue_media(); // подключим стили медиа, если их нет
+		wp_enqueue_media();
 
 		add_action( 'admin_print_footer_scripts', [ $this, '_add_script' ], 99 );
 
@@ -163,8 +170,8 @@ class WP_Term_Image {
 		<?php
 	}
 
-	## Add script
 	public function _add_script(){
+
 		// выходим если не на нужной странице таксономии
 		//$cs = get_current_screen();
 		//if( ! in_array($cs->base, array('edit-tags','term')) || ! in_array($cs->taxonomy, (array) $this->for_taxes) )
@@ -174,65 +181,64 @@ class WP_Term_Image {
 		$button_txt = __( 'Set featured image', 'default' );
 		?>
 		<script>
-			jQuery( document ).ready( function( $ ){
-				let frame
-				let $imgwrap = $( '.term__image__wrapper' )
-				let $imgid = $( '#term_imgid' )
+		jQuery( document ).ready( function( $ ){
+			let frame
+			let $imgwrap = $( '.term__image__wrapper' )
+			let $imgid = $( '#term_imgid' )
 
-				// добавление
-				$( '.termeta_img_button' ).click( function( ev ){
-					ev.preventDefault();
+			// добавление
+			$( '.termeta_img_button' ).click( function( ev ){
+				ev.preventDefault();
 
-					if( frame ){
-						frame.open();
-						return;
-					}
-
-					// задаем media frame
-					frame = wp.media.frames.questImgAdd = wp.media( {
-						states: [
-							new wp.media.controller.Library( {
-								title   : '<?= $title ?>',
-								library : wp.media.query( { type: 'image' } ),
-								multiple: false
-								//date:   false
-							} )
-						],
-						button: {
-							text: '<?= $button_txt ?>' // Set the text of the button.
-						}
-					} );
-
-					// выбор
-					frame.on( 'select', function(){
-						let selected = frame.state().get( 'selection' ).first().toJSON();
-						if( selected ){
-							$imgid.val( selected.id );
-							let src = selected.sizes.thumbnail ? selected.sizes.thumbnail.url : selected.url
-							$imgwrap.find( 'img' ).attr( 'src', src );
-						}
-					} );
-
-					// открываем
-					frame.on( 'open', function(){
-						if( $imgid.val() ) frame.state().get( 'selection' ).add( wp.media.attachment( $imgid.val() ) );
-					} );
-
+				if( frame ){
 					frame.open();
+					return;
+				}
+
+				// задаем media frame
+				frame = wp.media.frames.questImgAdd = wp.media( {
+					states: [
+						new wp.media.controller.Library( {
+							title   : '<?= $title ?>',
+							library : wp.media.query( { type: 'image' } ),
+							multiple: false
+							//date:   false
+						} )
+					],
+					button: {
+						text: '<?= $button_txt ?>' // Set the text of the button.
+					}
 				} );
 
-				// удаление
-				$( '.termeta_img_remove_js' ).click( function(){
-					$imgid.val( '' );
-					$imgwrap.find( 'img' ).attr( 'src', '<?= str_replace( "'", "\'", self::$args['noimage_src'] ) ?>' );
+				// выбор
+				frame.on( 'select', function(){
+					let selected = frame.state().get( 'selection' ).first().toJSON();
+					if( selected ){
+						$imgid.val( selected.id );
+						let src = selected.sizes.thumbnail ? selected.sizes.thumbnail.url : selected.url
+						$imgwrap.find( 'img' ).attr( 'src', src );
+					}
 				} );
+
+				// открываем
+				frame.on( 'open', function(){
+					if( $imgid.val() ) frame.state().get( 'selection' ).add( wp.media.attachment( $imgid.val() ) );
+				} );
+
+				frame.open();
 			} );
-		</script>
 
+			// удаление
+			$( '.termeta_img_remove_js' ).click( function(){
+				$imgid.val( '' );
+				$imgwrap.find( 'img' ).attr( 'src', '<?= str_replace( "'", "\'", self::$args['noimage_src'] ) ?>' );
+			} );
+		} );
+		</script>
 		<?php
 	}
 
-	## Добавляет колонку картинки в таблицу терминов
+	// Adds a image column to the term table
 	public function _add_image_column( $columns ){
 
 		// fix column width
@@ -250,14 +256,15 @@ class WP_Term_Image {
 			$image_id = self::get_image_id( $term_id );
 
 			$string = $image_id
-				? '<img src="' . wp_get_attachment_image_url( $image_id, 'thumbnail' ) . '" width="50" height="50" alt="" style="border-radius:4px;" />'
+				? sprintf( '<img src="%s" width="50" height="50" alt="" style="border-radius:4px;" />',
+					wp_get_attachment_image_url( $image_id, 'thumbnail' ) )
 				: '';
 		}
 
 		return $string;
 	}
 
-	## Save the form field
+	// Save the form field
 	public function _create_term__handler( $term_id, $tt_id ){
 
 		if( isset( $_POST['term_imgid'] ) && $attach_id = (int) $_POST['term_imgid'] ){
@@ -267,7 +274,7 @@ class WP_Term_Image {
 		}
 	}
 
-	## Update the form field value
+	// Update the form field value
 	public function _updated_term__handler( $term_id ){
 
 		if( ! isset( $_POST['term_imgid'] ) ){

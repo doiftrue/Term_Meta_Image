@@ -20,7 +20,7 @@ interface WP_Term_Image_Interface {
 	 * @param array|string $args String can be passed when call it from WP hook directly.
 	 *                           {@see: static::$defautl_args}.
 	 *
-	 * @return WP_Term_Image
+	 * @return WP_Term_Image Instance of class by specified parameters.
 	 */
 	public static function init( $args = [] );
 
@@ -71,7 +71,8 @@ class WP_Term_Image implements WP_Term_Image_Interface {
 	public static function init( $args = [] ){
 		static $inst;
 
-		$args = array_intersect_key( $args, self::$default_args );
+		$args = array_filter( (array) $args ); // may be null if called directly from wp hook
+		$args = array_intersect_key( $args, self::$default_args ); // leave allowed only
 
 		$inst_key = md5( serialize( $args ) );
 
@@ -134,15 +135,14 @@ class WP_Term_Image implements WP_Term_Image_Interface {
 		add_action( 'admin_print_footer_scripts', [ $this, '_add_script' ], 99 );
 		$this->_css();
 		?>
-		<div class="form-field term-group">
+		<div class="form-field term-group term_image_wrapper_js">
 			<label><?php _e( 'Image', 'default' ) ?></label>
 
 			<div class="term__image__wrapper">
-				<a class="termeta_img_button" href="#">
+				<button type="button" class="termeta_img_button termeta_img_button_js">
 					<img width="100" height="100" alt="" src="<?= $this->args['noimage_src'] ?>">
-				</a>
-				<input type="button" class="button button-secondary termeta_img_remove_js"
-				       value="<?php _e( 'Remove', 'default' ) ?>"/>
+				</button>
+				<button type="button" class="button button-secondary termeta_img_remove_js"><?php _e( 'Remove', 'default' ) ?></button>
 			</div>
 
 			<input type="hidden" id="term_imgid" name="term_imgid" value="">
@@ -172,15 +172,12 @@ class WP_Term_Image implements WP_Term_Image_Interface {
 
 		$this->_css();
 		?>
-		<tr class="form-field term-group-wrap">
+		<tr class="form-field term-group-wrap term_image_wrapper_js">
 			<th scope="row"><?php _e( 'Image', 'default' ) ?></th>
 			<td>
 				<div class="term__image__wrapper">
-					<a class="termeta_img_button" href="#">
-						<?= '<img src="' . $image_url . '" alt="">' ?>
-					</a>
-					<input type="button" class="button button-secondary termeta_img_remove_js"
-					       value="<?php _e( 'Remove', 'default' ) ?>"/>
+					<button type="button" class="termeta_img_button termeta_img_button_js"><img src="<?= $image_url ?>" alt=""></button>
+					<button type="button" class="button button-secondary termeta_img_remove_js"><?php _e( 'Remove', 'default' ) ?></button>
 				</div>
 
 				<input type="hidden" id="term_imgid" name="term_imgid" value="<?= $image_id ?>">
@@ -192,7 +189,9 @@ class WP_Term_Image implements WP_Term_Image_Interface {
 	private function _css(){
 		?>
 		<style>
-			.termeta_img_button{ display:inline-block; margin-right:1em; }
+			.termeta_img_button{ display:inline-block; margin-right:1em;
+				border:0; padding:0; cursor:pointer; /* reset */
+			}
 			.termeta_img_button img{ display:block; float:left; margin:0; padding:0;
 				width:100px; height:100px;
 				background:rgba(0, 0, 0, .07);
@@ -215,13 +214,20 @@ class WP_Term_Image implements WP_Term_Image_Interface {
 		?>
 		<script>
 		document.addEventListener( 'DOMContentLoaded', function(){
-			const $ = jQuery
-			let frame
-			let $imgwrap = $( '.term__image__wrapper' )
-			let $imgid = $( '#term_imgid' )
 
-			// добавление
-			$( '.termeta_img_button' ).click( function( ev ){
+			const imgwrap = document.querySelector( '.term_image_wrapper_js' )
+
+			if( ! imgwrap ){
+				return;
+			}
+
+			const addButton = imgwrap.querySelector( '.termeta_img_button_js' )
+			const delButton = imgwrap.querySelector( '.termeta_img_remove_js' )
+			const imgInput = imgwrap.querySelector( '#term_imgid' )
+			let frame
+
+			// add / edit
+			addButton.addEventListener( 'click', function( ev ){
 				ev.preventDefault();
 
 				if( frame ){
@@ -244,28 +250,29 @@ class WP_Term_Image implements WP_Term_Image_Interface {
 					}
 				} );
 
-				// выбор
+				// select
 				frame.on( 'select', function(){
 					let selected = frame.state().get( 'selection' ).first().toJSON();
 					if( selected ){
-						$imgid.val( selected.id );
+						imgInput.value = selected.id;
 						let src = selected.sizes.thumbnail ? selected.sizes.thumbnail.url : selected.url
-						$imgwrap.find( 'img' ).attr( 'src', src );
+						imgwrap.querySelector( 'img' ).setAttribute( 'src', src );
 					}
 				} );
 
-				// открываем
+				// open media-popup
 				frame.on( 'open', function(){
-					if( $imgid.val() ) frame.state().get( 'selection' ).add( wp.media.attachment( $imgid.val() ) );
+					if( imgInput.value )
+						frame.state().get( 'selection' ).add( wp.media.attachment( imgInput.value ) );
 				} );
 
 				frame.open();
 			} );
 
-			// удаление
-			$( '.termeta_img_remove_js' ).click( function(){
-				$imgid.val( '' );
-				$imgwrap.find( 'img' ).attr( 'src', '<?= str_replace( "'", "\'", $this->args['noimage_src'] ) ?>' );
+			// remove
+			delButton.addEventListener( 'click', function(){
+				imgInput.value = '';
+				imgwrap.querySelector( 'img' ).setAttribute( 'src', '<?= str_replace( "'", "\'", $this->args['noimage_src'] ) ?>' );
 			} );
 
 		} );

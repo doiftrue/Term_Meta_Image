@@ -1,25 +1,49 @@
 <?php
 
-/**
- * Ability to upload images for terms (elements of taxonomies: categories, labels).
- *
- * See here for an example of how to use it: https://github.com/doiftrue/Term_Meta_Image
- *
- * @author Kama (wp-kama.ru)
- *
- * @version 3.5
- */
-
 namespace Kama;
 
-class WP_Term_Image {
+use WP_Term;
+
+/**
+ * Ability to upload images for terms (elements of taxonomies: categories, tags).
+ *
+ * Examples of usage: https://github.com/doiftrue/Term_Meta_Image
+ *
+ * @author Kama (wp-kama.com)
+ *
+ * @version 3.5.1
+ */
+
+interface WP_Term_Image_Interface {
+
+	/**
+	 * @param array|string $args String can be passed when call it from WP hook directly.
+	 *                           {@see: static::$defautl_args}.
+	 *
+	 * @return WP_Term_Image
+	 */
+	public static function init( $args = [] );
+
+	/**
+	 * @param int|WP_Term $term  The term which image you want to get.
+	 *
+	 * @return int WP attachment image ID or 0 if no image.
+	 */
+	public static function get_image_id( $term );
+}
+
+class WP_Term_Image implements WP_Term_Image_Interface {
+
+	use WP_Term_Image__Table_Columns;
+
+	private $args;
 
 	/**
 	 * Default parameters that can be changed during class initialization.
 	 *
 	 * @var array
 	 */
-	private static $args = [
+	private static $default_args = [
 
 		// For which taxonomies to include code. The default is for all public ones.
 		'taxonomies' => [],
@@ -42,27 +66,37 @@ class WP_Term_Image {
 	 */
 	private static $attach_meta_key = 'image_of_term';
 
-	/**
-	 * @param array|string $args String can be passed when call it from WP hook directly.
-	 *                           See: self::$args.
-	 *
-	 * @return WP_Term_Image
-	 */
+	private function __construct(){}
+
 	public static function init( $args = [] ){
 		static $inst;
 
-		$inst || $inst = new self( (array) $args );
+		$args = array_intersect_key( $args, self::$default_args );
 
-		return $inst;
+		$inst_key = md5( serialize( $args ) );
+
+		if( empty( $inst[ $inst_key ] ) ){
+			$inst[ $inst_key ] = new self();
+
+			$inst[ $inst_key ]->set_args( $args );
+			$inst[ $inst_key ]->register_hooks();
+		}
+
+		return $inst[ $inst_key ];
 	}
 
-	private function __construct( array $args = [] ){
+	private function set_args( array $args = [] ){
 
-		self::$args = $args + self::$args;
+		$this->args = $args + self::$default_args;
 
-		$taxes = self::$args['taxonomies'] ?: get_taxonomies( [ 'public' => true ], 'names' );
+		if( ! $this->args['taxonomies'] ){
+			$this->args['taxonomies'] = get_taxonomies( [ 'public' => true ], 'names' );
+		}
+	}
 
-		foreach( $taxes as $taxname ){
+	private function register_hooks(){
+
+		foreach( $this->args['taxonomies'] as $taxname ){
 
 			add_action( "{$taxname}_add_form_fields", [ $this, '_add_term__image_fields' ], 10 );
 			add_action( "{$taxname}_edit_form_fields", [ $this, '_update_term__image_fields' ], 10, 2 );
@@ -73,11 +107,10 @@ class WP_Term_Image {
 			add_filter( "manage_edit-{$taxname}_columns", [ $this, '_add_image_column' ] );
 			add_filter( "manage_{$taxname}_custom_column", [ $this, '_fill_image_column' ], 10, 3 );
 		}
-
 	}
 
 	/**
-	 * @param int|\WP_Term $term The term which image you want to get.
+	 * @param int|WP_Term $term  The term which image you want to get.
 	 *
 	 * @return int 0 if no image.
 	 */
@@ -106,7 +139,7 @@ class WP_Term_Image {
 
 			<div class="term__image__wrapper">
 				<a class="termeta_img_button" href="#">
-					<img width="100" height="100" alt="" src="<?= self::$args['noimage_src'] ?>">
+					<img width="100" height="100" alt="" src="<?= $this->args['noimage_src'] ?>">
 				</a>
 				<input type="button" class="button button-secondary termeta_img_remove_js"
 				       value="<?php _e( 'Remove', 'default' ) ?>"/>
@@ -120,8 +153,8 @@ class WP_Term_Image {
 	/**
 	 * Fields when editing a term.
 	 *
-	 * @param \WP_Term $term
-	 * @param string   $taxonomy
+	 * @param WP_Term $term
+	 * @param string  $taxonomy
 	 *
 	 * @return void
 	 */
@@ -135,7 +168,7 @@ class WP_Term_Image {
 
 		$image_url = $image_id
 			? wp_get_attachment_image_url( $image_id, 'thumbnail' )
-			: self::$args['noimage_src'];
+			: $this->args['noimage_src'];
 
 		$this->_css();
 		?>
@@ -181,7 +214,8 @@ class WP_Term_Image {
 		$button_txt = __( 'Set featured image', 'default' );
 		?>
 		<script>
-		jQuery( document ).ready( function( $ ){
+		document.addEventListener( 'DOMContentLoaded', function(){
+			const $ = jQuery
 			let frame
 			let $imgwrap = $( '.term__image__wrapper' )
 			let $imgid = $( '#term_imgid' )
@@ -231,47 +265,26 @@ class WP_Term_Image {
 			// удаление
 			$( '.termeta_img_remove_js' ).click( function(){
 				$imgid.val( '' );
-				$imgwrap.find( 'img' ).attr( 'src', '<?= str_replace( "'", "\'", self::$args['noimage_src'] ) ?>' );
+				$imgwrap.find( 'img' ).attr( 'src', '<?= str_replace( "'", "\'", $this->args['noimage_src'] ) ?>' );
 			} );
+
 		} );
 		</script>
 		<?php
 	}
 
-	// Adds a image column to the term table
-	public function _add_image_column( $columns ){
-
-		// fix column width
-		add_action( 'admin_notices', function(){
-			echo '<style>.column-image{ width:50px; text-align:center; }</style>';
-		} );
-
-		// column without name
-		return array_slice( $columns, 0, 1 ) + [ 'image' => '' ] + $columns;
-	}
-
-	public function _fill_image_column( $string, $column_name, $term_id ){
-
-		if( 'image' === $column_name ){
-			$image_id = self::get_image_id( $term_id );
-
-			$string = $image_id
-				? sprintf( '<img src="%s" width="50" height="50" alt="" style="border-radius:4px;" />',
-					wp_get_attachment_image_url( $image_id, 'thumbnail' ) )
-				: '';
-		}
-
-		return $string;
-	}
-
 	// Save the form field
 	public function _create_term__handler( $term_id, $tt_id ){
 
-		if( isset( $_POST['term_imgid'] ) && $attach_id = (int) $_POST['term_imgid'] ){
-			update_term_meta( $term_id, self::$meta_key, $attach_id );
+		$attach_id = isset( $_POST['term_imgid'] ) ? (int) $_POST['term_imgid'] : 0;
 
-			self::up_attach_term_id( $attach_id, 'add', $term_id );
+		if( ! $attach_id ){
+			return;
 		}
+
+		update_term_meta( $term_id, self::$meta_key, $attach_id );
+
+		self::up_attach_term_id( $attach_id, 'add', $term_id );
 	}
 
 	// Update the form field value
@@ -339,6 +352,42 @@ class WP_Term_Image {
 		update_post_meta( $attach_id, self::$attach_meta_key, $joined_term_ids );
 
 		return $term_ids;
+	}
+
+}
+
+trait WP_Term_Image__Table_Columns {
+
+	/**
+	 * Adds an image column to the term table. Method for WP hook.
+	 *
+	 * @param array $columns
+	 *
+	 * @return array|string[]
+	 */
+	public function _add_image_column( $columns ){
+
+		// fix column width
+		add_action( 'admin_notices', function(){
+			echo '<style>.column-image{ width:50px; text-align:center; }</style>';
+		} );
+
+		// column without name
+		return array_slice( $columns, 0, 1 ) + [ 'image' => '' ] + $columns;
+	}
+
+	public function _fill_image_column( $string, $column_name, $term_id ){
+
+		if( 'image' === $column_name ){
+			$image_id = self::get_image_id( $term_id );
+
+			$string = $image_id
+				? sprintf( '<img src="%s" width="50" height="50" alt="" style="border-radius:4px;" />',
+					wp_get_attachment_image_url( $image_id, 'thumbnail' ) )
+				: '';
+		}
+
+		return $string;
 	}
 
 }

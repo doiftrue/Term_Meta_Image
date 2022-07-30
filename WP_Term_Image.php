@@ -34,8 +34,6 @@ interface WP_Term_Image_Interface {
 
 class WP_Term_Image implements WP_Term_Image_Interface {
 
-	use WP_Term_Image__Table_Columns;
-
 	private $args;
 
 	/**
@@ -105,8 +103,8 @@ class WP_Term_Image implements WP_Term_Image_Interface {
 			add_action( "edited_{$taxname}", [ $this, '_updated_term__handler' ], 10 );
 
 			// table columns
-			add_filter( "manage_edit-{$taxname}_columns", [ $this, '_add_image_column' ] );
-			add_filter( "manage_{$taxname}_custom_column", [ $this, '_fill_image_column' ], 10, 3 );
+			add_filter( "manage_edit-{$taxname}_columns", [ WP_Term_Image_Table_Columns::class, '_add_image_column' ] );
+			add_filter( "manage_{$taxname}_custom_column", [ WP_Term_Image_Table_Columns::class, '_fill_image_column' ], 10, 3 );
 		}
 	}
 
@@ -363,7 +361,7 @@ class WP_Term_Image implements WP_Term_Image_Interface {
 
 }
 
-trait WP_Term_Image__Table_Columns {
+class WP_Term_Image_Table_Columns {
 
 	/**
 	 * Adds an image column to the term table. Method for WP hook.
@@ -372,21 +370,21 @@ trait WP_Term_Image__Table_Columns {
 	 *
 	 * @return array|string[]
 	 */
-	public function _add_image_column( $columns ){
+	public static function _add_image_column( $columns ){
 
 		// fix column width
 		add_action( 'admin_notices', function(){
 			echo '<style>.column-image{ width:50px; text-align:center; }</style>';
 		} );
 
-		// column without name
+		// column has no name
 		return array_slice( $columns, 0, 1 ) + [ 'image' => '' ] + $columns;
 	}
 
-	public function _fill_image_column( $string, $column_name, $term_id ){
+	public static function _fill_image_column( $string, $column_name, $term_id ){
 
 		if( 'image' === $column_name ){
-			$image_id = self::get_image_id( $term_id );
+			$image_id = WP_Term_Image::get_image_id( $term_id );
 
 			$string = $image_id
 				? sprintf( '<img src="%s" width="50" height="50" alt="" style="border-radius:4px;" />',

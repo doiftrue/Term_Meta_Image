@@ -11,7 +11,7 @@ use WP_Term;
  *
  * @author Kama (wp-kama.com)
  *
- * @version 3.5.1
+ * @version 3.5.2
  */
 
 interface WP_Term_Image_Interface {

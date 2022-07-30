@@ -1,5 +1,15 @@
 
 
+#### 3.5.2 (2022-07-30)
+- Refactoring: WP_Term_Image__Table_Columns trait to separate class.
+
+#### 3.5.1 (2022-07-30)
+- Refactoring.
+- Removed jQuery dependency.
+
+#### 3.5 (2022-05-11)
+- JS improvements 
+
 #### 3.4 (2022-02-10)
 - Новый метод get_image_id()
 - Передача параметров при инициализации.

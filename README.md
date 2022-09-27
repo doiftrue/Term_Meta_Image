@@ -32,7 +32,7 @@ composer require doiftrue/wp_term_image
 Базовая без передачи параметров:
 
 ```php
-add_action( 'admin_init', '\\Kama\\WP_Term_Image::init' );
+add_action( 'admin_init', [ \Kama\WP_Term_Image::class, 'init' ] );
 ```
 
 С передачей параметров:

@@ -1,49 +1,49 @@
 
-Миниатюры для элементов таксономий WordPress
+Thumbnails for WordPress taxonomy elements
 ------------------
 
-Добавляет возможность задавать миниатюры для элементов таксономий WordPress, как встроенных (метки, рубрики), так и произвольных.
+Adds the ability to set thumbnails for WordPress terms (elements of taxonomies), both built-in (tags, categories) and custom ones.
 
-Подробнее читайте по этой ссылке: https://wp-kama.ru/7686
+Read more at this link: https://wp-kama.ru/7686
 
 ![](https://wp-kama.ru/wp-content/uploads/2016/12/miniatyura-dlya-termina-sozdanie.png)
 
 
 
-Пример использования 
+Usage Example
 --------------------
 
-### Подключение
+### Connecting
 
-Подключите php файл ``WP_Term_Image.php``:
+Include ``WP_Term_Image.php`` php file:
 
 ```php
 require_once __DIR__ . '/WP_Term_Image.php';
 ```
 
-Или используйте Composer:
+Or use the Composer:
 
 ```bash
 composer require doiftrue/wp_term_image
 ```
 
-### Инициализация
+### Initialization
 
-Базовая без передачи параметров:
+Basic without parameters passing:
 
 ```php
 add_action( 'admin_init', [ \Kama\WP_Term_Image::class, 'init' ] );
 ```
 
-С передачей параметров:
+With parameters passing:
 
 ```php
 add_action( 'admin_init', 'kama_wp_term_image' );
 
 function kama_wp_term_image(){
 	
-	// Укажем для какой таксономии нужна возможность устанавливать картинки.
-	// Можно не указывать, тогда возможность будет автоматом добавлена для всех публичных таксономий.
+	// Let's specify for which taxonomy it is necessary to set images.
+	// It is possible not to specify, then the possibility will be automatically added for all public taxonomies.
 
 	\Kama\WP_Term_Image::init( [
 		'taxonomies' => [ 'post_tag' ],
@@ -51,17 +51,19 @@ function kama_wp_term_image(){
 }
 ```
 
-### Получение данных в шаблоне темы
+### Get data in the theme template
 
-Пример получения ID картинки-вложения термина:
+An example of getting the ID of an attachment image of a term:
 
 ```php
 $image_id = \Kama\WP_Term_Image::get_image_id( $term_id );
+
 // OR
 $image_id = get_term_meta( $term_id, '_thumbnail_id', 1 );
 ```
 
-Теперь по ID мы пожем получить URL вложения:
+Now we can use the ID to get the URL of the attachment:
+
 ```php
 $image_url = wp_get_attachment_image_url( $image_id, 'thumbnail' );
 ```
